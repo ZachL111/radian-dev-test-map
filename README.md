@@ -1,43 +1,69 @@
 # radian-dev-test-map
 
-radian-dev-test-map is a Rust project for developer tools. It focuses on this technical goal: Build a Rust toolkit that studies test behavior through round-trip fixtures, with lossless normalization checks and fixture-scale datasets.
+`radian-dev-test-map` packages a practical developer tools exercise in Rust. The emphasis is on deterministic behavior, a small public API, and examples that explain the tradeoffs.
 
-## Why it exists
+## How I Read Radian Dev Test Map
 
-Small engineering tools are easiest to trust when their rules are explicit, testable, and cheap to run locally. This repository packages a focused model with fixture data and a local verification path so behavior can be reviewed without external services.
+The useful thing to inspect here is how the same score rule is represented in code, metadata, and examples. If those three pieces disagree, the audit script should make the drift visible.
 
-## Features
+## Problem Shape
 
-- Deterministic policy scoring over fixture scenarios.
-- Clear accept or review decisions based on a documented threshold.
-- A command-line or local test path for quick validation.
-- Golden fixture data for repeatable checks.
-- Minimal dependencies and a compact project layout.
+The repository exists to keep a technical idea small enough to reason about. The implementation avoids external dependencies where possible, then uses fixtures to make changes easy to review.
 
-## Architecture Notes
+## Repository Map
 
-The core module exposes a small scoring API. Inputs are simple numeric signals: demand, capacity, latency, risk, and weight. The score uses a threshold of 157, risk penalty 6, latency penalty 2, and weight bonus 3. Tests exercise the public API against the fixture cases in `fixtures/cases.csv`.
+- `src`: primary implementation
+- `tests`: verification harness
+- `fixtures`: compact golden scenarios
+- `examples`: expanded scenario set
+- `metadata`: project constants and verification metadata
+- `docs`: operations and extension notes
+- `scripts`: local verification and audit commands
+- `Cargo.toml`: Rust package metadata
 
-## Setup
+## Main Behaviors
 
-Install the Rust toolchain and run commands from the repository root.
+- Includes extended examples for safe defaults, including `surge` and `degraded`.
+- Documents repeatable output tradeoffs in `docs/operations.md`.
+- Runs locally with a single verification command and no external credentials.
+- Stores project constants and verification metadata in `metadata/project.json`.
+- Adds a repository audit script that checks structure before running the language verifier.
 
-## Usage
+## Internal Model
+
+The project is organized around a compact model rather than a large framework. Inputs are scored, classified, and checked against golden fixtures. The constants live in code and are mirrored in metadata so documentation drift is easy to catch. The Rust code keeps ownership and data movement plain, which makes the tests useful for checking both behavior and API shape.
+
+## Run It Locally
+
+Clone the repository, enter the directory, and run the verifier. No database server, cloud account, or token is required.
+
+## Scenario Walkthrough
+
+The extended cases are not random smoke tests. `degraded` keeps pressure on the review path, while `surge` shows the model when capacity and weight are strong enough to clear the threshold.
+
+## How To Run It
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
 ```
 
-The verification script builds or runs the project and checks the fixture decisions.
+This runs the language-level build or test path against the compact fixture set.
 
-## Tests
+## Validation
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/audit.ps1
 ```
 
-## Limitations And Roadmap
+The audit command checks repository structure and README constraints before it delegates to the verifier.
 
-- The fixture set is intentionally small so it can be audited by hand.
-- Future work could add richer domain-specific input adapters.
-- The model is a local demonstration and does not claim production use.
+## Follow-Up Work
+
+- Add malformed input fixtures so the failure path is as visible as the happy path.
+- Split the scoring constants into a typed configuration object and validate it before use.
+- Add a comparison mode that shows how decisions change when one signal is adjusted.
+- Add one more developer tools fixture that focuses on a malformed or borderline input.
+
+## Known Edges
+
+The repository favors determinism over breadth. It does not pull live data, keep secrets, or depend on network access for verification.
